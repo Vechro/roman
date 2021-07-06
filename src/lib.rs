@@ -1,36 +1,43 @@
 mod test;
 
-use std::{cmp};
-
-use phf::{phf_map, phf_ordered_map};
+use std::cmp;
 
 const ERROR_COPY: &str = "Invalid numerals!";
 
-static ROMAN_MAP: phf::Map<char, u16> = phf_map! {
-    'i' => 1,
-    'v' => 5,
-    'x' => 10,
-    'l' => 50,
-    'c' => 100,
-    'd' => 500,
-    'm' => 1000,
-};
+const fn roman_lut(numeral: &char) -> Option<u16> {
+    match numeral {
+        'i' => Some(1),
+        'v' => Some(5),
+        'x' => Some(10),
+        'l' => Some(50),
+        'c' => Some(100),
+        'd' => Some(500),
+        'm' => Some(1000),
+        _ => None,
+    }
+}
 
-static ARABIC_MAP: phf::OrderedMap<u16, &'static str> = phf_ordered_map! {
-    1000u16 => "m",
-    900u16 => "dm",
-    500u16 => "d",
-    400u16 => "cd",
-    100u16 => "c",
-    90u16 => "xc",
-    50u16 => "l",
-    40u16 => "xl",
-    10u16 => "x",
-    9u16 => "ix",
-    5u16 => "v",
-    4u16 => "iv",
-    1u16 => "i"
-};
+const fn arabic_lut(digit: &u16) -> Option<&str> {
+    match digit {
+        1 => Some("i"),
+        4 => Some("iv"),
+        5 => Some("v"),
+        9 => Some("ix"),
+        10 => Some("x"),
+        40 => Some("xl"),
+        50 => Some("l"),
+        90 => Some("xc"),
+        100 => Some("c"),
+        400 => Some("cd"),
+        500 => Some("d"),
+        900 => Some("dm"),
+        1000 => Some("m"),
+        _ => None,
+    }
+}
+
+static DIGITS_DESC: [u16; 13] = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+
 struct Tally {
     total: u64,
     max: u64,
@@ -48,7 +55,7 @@ pub fn convert_and_print_numerals(list_of_numerals: &[String]) {
                     };
                 }
                 c if c.is_numeric() => {
-                    match arabic_to_roman(number_str){
+                    match arabic_to_roman(number_str) {
                         Some(s) => println!("{}", s),
                         None => println!("{}", ERROR_COPY),
                     };
@@ -66,11 +73,16 @@ fn arabic_to_roman(arabic_numerals: &str) -> Option<String> {
         Err(_) => return None,
     };
 
-    let result = ARABIC_MAP
-        .entries()
-        .fold(String::new(), |mut state: String, (key, numeral)| {
-            let quot = num / *key as u64;
-            num = num % *key as u64;
+    let result = DIGITS_DESC
+        .iter()
+        .fold(String::new(), |mut state: String, digit| {
+            let quot = num / *digit as u64;
+            num = num % *digit as u64;
+
+            let numeral = match arabic_lut(digit) {
+                Some(s) => s,
+                None => unreachable!(),
+            };
 
             state.push_str(&numeral.repeat(quot as usize));
             state
@@ -83,8 +95,8 @@ fn roman_to_arabic(roman_numerals: &str) -> Option<u64> {
     let result = roman_numerals.chars().rfold(
         Some(Tally { total: 0, max: 0 }),
         |tally: Option<Tally>, c| {
-            let current_value = match ROMAN_MAP.get(&c) {
-                Some(val) => *val as u64,
+            let current_value = match roman_lut(&c) {
+                Some(val) => val as u64,
                 None => return None,
             };
 

@@ -1,8 +1,6 @@
 mod test;
 
-use std::cmp;
-
-const fn roman_lut(numeral: &char) -> Option<u16> {
+const fn roman_lut(numeral: &char) -> Option<usize> {
     match numeral {
         'I' => Some(1),
         'V' => Some(5),
@@ -15,7 +13,7 @@ const fn roman_lut(numeral: &char) -> Option<u16> {
     }
 }
 
-const fn arabic_lut(digit: &u16) -> Option<&str> {
+const fn arabic_lut(digit: &usize) -> Option<&str> {
     match digit {
         1 => Some("I"),
         4 => Some("IV"),
@@ -34,11 +32,11 @@ const fn arabic_lut(digit: &u16) -> Option<&str> {
     }
 }
 
-static DIGITS_DESC: [u16; 13] = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+static DIGITS_DESC: [usize; 13] = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
 
 struct Tally {
-    total: u64,
-    max: u64,
+    total: usize,
+    max: usize,
 }
 
 // Impure function as it prints to stdout immediately.
@@ -61,7 +59,7 @@ pub fn convert_and_print_numerals(list_of_numerals: &[String]) {
 }
 
 fn arabic_to_roman(arabic_numerals: &str) -> Option<String> {
-    let mut num = match arabic_numerals.parse::<u64>() {
+    let mut num = match arabic_numerals.parse::<usize>() {
         Ok(n) => n,
         Err(_) => return None,
     };
@@ -69,15 +67,15 @@ fn arabic_to_roman(arabic_numerals: &str) -> Option<String> {
     let result = DIGITS_DESC
         .iter()
         .fold(String::new(), |mut state: String, digit| {
-            let quot = num / *digit as u64;
-            num = num % *digit as u64;
+            let quot = num / *digit;
+            num = num % *digit;
 
             let numeral = match arabic_lut(digit) {
                 Some(s) => s,
                 None => unreachable!(),
             };
 
-            state.push_str(&numeral.repeat(quot as usize));
+            state.push_str(&numeral.repeat(quot));
             state
         });
 
@@ -89,7 +87,7 @@ fn roman_to_arabic(roman_numerals: &str) -> Option<String> {
         Some(Tally { total: 0, max: 0 }),
         |tally: Option<Tally>, c| {
             let current_value = match roman_lut(&c) {
-                Some(val) => val as u64,
+                Some(val) => val,
                 None => return None,
             };
 
@@ -98,7 +96,7 @@ fn roman_to_arabic(roman_numerals: &str) -> Option<String> {
                 None => return None,
             };
 
-            max = cmp::max(current_value, max);
+            max = current_value.max(max);
 
             if current_value >= max {
                 Some(Tally {

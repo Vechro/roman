@@ -1,0 +1,8 @@
+[package]
+name = "roman"
+version = "0.1.0"
+authors = ["Vechro"]
+edition = "2018"
+
+[dependencies]
+phf = { version = "0.9", features = ["macros"] }

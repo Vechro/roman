@@ -2,36 +2,34 @@ mod test;
 
 use std::cmp;
 
-const ERROR_COPY: &str = "Invalid numerals!";
-
 const fn roman_lut(numeral: &char) -> Option<u16> {
     match numeral {
-        'i' => Some(1),
-        'v' => Some(5),
-        'x' => Some(10),
-        'l' => Some(50),
-        'c' => Some(100),
-        'd' => Some(500),
-        'm' => Some(1000),
+        'I' => Some(1),
+        'V' => Some(5),
+        'X' => Some(10),
+        'L' => Some(50),
+        'C' => Some(100),
+        'D' => Some(500),
+        'M' => Some(1000),
         _ => None,
     }
 }
 
 const fn arabic_lut(digit: &u16) -> Option<&str> {
     match digit {
-        1 => Some("i"),
-        4 => Some("iv"),
-        5 => Some("v"),
-        9 => Some("ix"),
-        10 => Some("x"),
-        40 => Some("xl"),
-        50 => Some("l"),
-        90 => Some("xc"),
-        100 => Some("c"),
-        400 => Some("cd"),
-        500 => Some("d"),
-        900 => Some("dm"),
-        1000 => Some("m"),
+        1 => Some("I"),
+        4 => Some("IV"),
+        5 => Some("V"),
+        9 => Some("IX"),
+        10 => Some("X"),
+        40 => Some("XL"),
+        50 => Some("L"),
+        90 => Some("XC"),
+        100 => Some("C"),
+        400 => Some("CD"),
+        500 => Some("D"),
+        900 => Some("DM"),
+        1000 => Some("M"),
         _ => None,
     }
 }
@@ -46,24 +44,19 @@ struct Tally {
 // Impure function as it prints to stdout immediately.
 pub fn convert_and_print_numerals(list_of_numerals: &[String]) {
     for number_str in list_of_numerals {
-        match number_str.chars().next() {
+        let result = match number_str.chars().next() {
             Some(c) => match c {
-                c if c.is_alphabetic() => {
-                    match roman_to_arabic(number_str) {
-                        Some(n) => println!("{}", n),
-                        None => println!("{}", ERROR_COPY),
-                    };
-                }
-                c if c.is_numeric() => {
-                    match arabic_to_roman(number_str) {
-                        Some(s) => println!("{}", s),
-                        None => println!("{}", ERROR_COPY),
-                    };
-                }
-                _ => return,
+                c if c.is_ascii_alphabetic() => roman_to_arabic(&number_str.to_ascii_uppercase()),
+                c if c.is_ascii_digit() => arabic_to_roman(number_str),
+                _ => None,
             },
-            _ => return,
-        }
+            _ => unreachable!(),
+        };
+
+        match result {
+            Some(s) => println!("{}", s),
+            None => println!("Invalid numerals!"),
+        };
     }
 }
 
@@ -91,7 +84,7 @@ fn arabic_to_roman(arabic_numerals: &str) -> Option<String> {
     Some(result)
 }
 
-fn roman_to_arabic(roman_numerals: &str) -> Option<u64> {
+fn roman_to_arabic(roman_numerals: &str) -> Option<String> {
     let result = roman_numerals.chars().rfold(
         Some(Tally { total: 0, max: 0 }),
         |tally: Option<Tally>, c| {
@@ -122,7 +115,7 @@ fn roman_to_arabic(roman_numerals: &str) -> Option<u64> {
     );
 
     match result {
-        Some(Tally { total, .. }) => Some(total),
+        Some(Tally { total, .. }) => Some(total.to_string()),
         None => None,
     }
 }

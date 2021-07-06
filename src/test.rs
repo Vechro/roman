@@ -4,17 +4,17 @@ mod roman {
 
     #[test]
     fn ix() {
-        assert_eq!(roman_to_arabic("ix"), Some(9));
+        assert_eq!(roman_to_arabic("ix"), Some(String::from("9")));
     }
 
     #[test]
     fn dccc() {
-        assert_eq!(roman_to_arabic("dccc"), Some(800));
+        assert_eq!(roman_to_arabic("dccc"), Some(String::from("800")));
     }
 
     #[test]
     fn xviii() {
-        assert_eq!(roman_to_arabic("xviii"), Some(18));
+        assert_eq!(roman_to_arabic("xviii"), Some(String::from("18")));
     }
 }
 
